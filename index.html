@@ -7,18 +7,21 @@
 <title>SCOREX</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#10151d;color:white;font-family:Arial}
-header{background:#182330;padding:22px;text-align:center}
-.logo{font-size:30px;font-weight:bold;color:#32df87}
-nav{display:flex;justify-content:space-around;background:#202d3b;padding:15px}
-nav span{color:white;font-weight:bold}
-main{padding:16px}
-h2{color:#32df87}
-.match{background:#202d3b;border-radius:12px;padding:20px;margin:14px 0;text-align:center}
-.teams{display:flex;justify-content:space-around;align-items:center;font-size:17px}
-.score{font-size:27px;color:#32df87;font-weight:bold}
-.status{color:#aaa;margin-top:12px}
-footer{text-align:center;color:#888;padding:25px}
+body{margin:0;background:#090d18;color:white;font-family:Arial,sans-serif}
+header{background:#111a2b;padding:22px;text-align:center}
+.logo{font-size:32px;font-weight:bold;color:#20e69a}
+header p{color:#9ba9bc}
+nav{display:flex;justify-content:space-around;background:#172238;padding:15px}
+nav a{color:white;text-decoration:none;font-size:14px}
+main{padding:18px}
+h2{color:#20e69a}
+.card{background:#172238;padding:17px;margin:13px 0;border-radius:12px}
+.match{display:flex;justify-content:space-between;align-items:center;text-align:center}
+.team{width:35%;font-weight:bold}
+.score{font-size:23px;color:#20e69a;font-weight:bold}
+.status{color:#ffbd50;text-align:center;margin-top:12px}
+button{background:#20e69a;border:0;padding:12px 22px;border-radius:8px;font-weight:bold}
+footer{text-align:center;color:#8290a5;padding:25px}
 </style>
 </head>
 <body>
@@ -27,35 +30,52 @@ footer{text-align:center;color:#888;padding:25px}
 <p>عالم كرة القدم بين يديك</p>
 </header>
 <nav>
-<span>الرئيسية</span>
-<span>المباريات</span>
-<span>الدوريات</span>
+<a href="#">الرئيسية</a>
+<a href="#matches">المباريات</a>
+<a href="#leagues">الدوريات</a>
 </nav>
 <main>
-<h2>⚡ المباريات</h2>
-<div class="match">
-<div class="teams">
-<span>ريال مدريد</span>
-<span class="score">VS</span>
-<span>برشلونة</span>
+<h2 id="matches">⚽ المباريات</h2>
+<div id="results">
+<div class="card">جاري تحميل المباريات...</div>
 </div>
-<div class="status">موعد المباراة قريباً</div>
-</div>
-<div class="match">
-<div class="teams">
-<span>مانشستر سيتي</span>
-<span class="score">VS</span>
-<span>ليفربول</span>
-</div>
-<div class="status">موعد المباراة قريباً</div>
-</div>
-<h2>🌍 جميع الدوريات</h2>
-<div class="match">🇪🇸 الدوري الإسباني</div>
-<div class="match">🏴 الدوري الإنجليزي</div>
-<div class="match">🇮🇹 الدوري الإيطالي</div>
-<div class="match">🇩🇪 الدوري الألماني</div>
-<div class="match">🇫🇷 الدوري الفرنسي</div>
+<h2 id="leagues">🏆 الدوريات</h2>
+<div class="card">الدوري الإنجليزي الممتاز</div>
+<div class="card">الدوري الإسباني</div>
+<div class="card">الدوري الإيطالي</div>
+<div class="card">الدوري الألماني</div>
+<div class="card">الدوري الفرنسي</div>
 </main>
 <footer>SCOREX © 2026</footer>
+<script>
+const API = "https://scorex-server-2026.onrender.com";
+
+async function loadMatches(){
+ const box=document.getElementById("results");
+ try{
+  const response=await fetch(API+"/api/matches");
+  if(!response.ok) throw new Error("API error");
+  const data=await response.json();
+  if(!data.matches || data.matches.length===0){
+   box.innerHTML='<div class="card">لا توجد مباريات حالياً</div>';
+   return;
+  }
+  box.innerHTML=data.matches.map(m=>`
+   <div class="card">
+    <div class="match">
+     <div class="team">${m.homeTeam?.name || "الفريق الأول"}</div>
+     <div class="score">${m.score?.fullTime?.home ?? "-"} : ${m.score?.fullTime?.away ?? "-"}</div>
+     <div class="team">${m.awayTeam?.name || "الفريق الثاني"}</div>
+    </div>
+    <div class="status">${m.status || "مباراة"}</div>
+   </div>
+  `).join("");
+ }catch(e){
+  box.innerHTML='<div class="card">تعذر تحميل المباريات. سنتحقق من اتصال الخادم.</div>';
+ }
+}
+loadMatches();
+setInterval(loadMatches,60000);
+</script>
 </body>
 </html>
